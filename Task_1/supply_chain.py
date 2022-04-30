@@ -1,7 +1,9 @@
 import urllib.request
 import json
 from copy import copy
+import argparse
 
+# node representing each seller
 class Node:
     def __init__(self, seller_id, name, domain, seller_type, is_passthrough, depth=1, leaf=False):
         self.seller_id = seller_id
@@ -15,7 +17,7 @@ class Node:
             self.leaves = []
 
     def __str__(self):
-        return str(self.leaves)
+        return str(self.seller_id)
 
 
 class SupplyChain:
@@ -23,7 +25,9 @@ class SupplyChain:
         self.root_name = 'OpenX'
         self.leaves = []
         self.max_depth = 0
+        self.insert()
 
+    # insert data from json
     def insert(self):
 
         def _insert(node_depth, domain_name):
@@ -68,6 +72,7 @@ class SupplyChain:
 
                 new_node.leaves = copy(nodes)
 
+    # checking if domain is direct or indirect
     def is_direct(self, domain_name):
 
         def _is_direct(domain_name, node):
@@ -87,12 +92,17 @@ class SupplyChain:
 
 
 if __name__ == '__main__':
-    m = SupplyChain()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--domain")
+    args = parser.parse_args()
+    config = vars(args)
+    domain_name = 'gamepress.gg' if str(config['domain']) == 'None' else str(config['domain'])
 
-    m.insert()
+    # creating an instance of a class
+    sup_chain = SupplyChain()
 
-    # print(m)
+    # printing the maximum depth of our Supply Chain
+    print(f'\nmaximum depth of the Supply Chain: {sup_chain.max_depth}\n')
 
-    print(m.max_depth)
-
-    print(m.is_direct('gamepress.gg'))
+    # checking if a domain is direct or indirect Seller
+    print(f'Is {domain_name} direct or indirect?: {sup_chain.is_direct(domain_name)}\n')

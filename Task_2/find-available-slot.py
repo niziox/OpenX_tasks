@@ -10,6 +10,7 @@ def find_available_slot(path_dict, duration, minumum_people):
     path_dict = str(path_dict).strip('/')
     arr = os.listdir(path_dict)
 
+    # getting calendars from txt
     for person in arr:
         person_list = []
         with open(path_dict + '/' + str(person)) as f:
@@ -17,6 +18,7 @@ def find_available_slot(path_dict, duration, minumum_people):
                 person_list.append(line.strip())
             calendar_dict[person[:-4]] = person_list
 
+    # getting max and min date for time interval
     max_date = datetime.date(1000, 1, 1)
     min_date = datetime.date(9999, 12, 31)
     for date in [value for values in calendar_dict.values() for value in values]:
@@ -28,6 +30,7 @@ def find_available_slot(path_dict, duration, minumum_people):
         if date < min_date:
             min_date = date
 
+    # creating calendar as a matrix
     return_date = max_date
     min_date = datetime.datetime.fromisoformat(str(min_date) + ' 00:00:00')
     max_date = datetime.datetime.fromisoformat(str(max_date) + ' 23:59:59')
@@ -50,12 +53,15 @@ def find_available_slot(path_dict, duration, minumum_people):
                     if start_date <= i_date <= end_date:
                         calendar_matrix[i][idx] = 1
 
+    # creating calendar as a pandas DataFrame
     calendar_df = pd.DataFrame(calendar_matrix, columns=['date']+list(calendar_dict.keys()))
 
+    # creating time interval of 'duration' length
     window_matrix = np.zeros((duration, minumum_people), dtype=int)
 
     calendar_array = np.array(calendar_df.iloc[:, 1:].values.tolist())
 
+    # iterating through calendar to find available slot
     for lvl in range(calendar_df.shape[0]):
         if minumum_people == len(arr):
             if lvl >= calendar_array.shape[0] - duration:
@@ -74,6 +80,7 @@ def find_available_slot(path_dict, duration, minumum_people):
                     if np.all(calendar_array_cut[lvl:lvl+duration, :] == window_matrix):
                         return calendar_df.iloc[lvl, 0]
 
+    # if available slot not found return end of a calendar
     return_date += datetime.timedelta(days=1)
     return datetime.datetime.fromisoformat(str(return_date) + ' 00:00:00')
 
